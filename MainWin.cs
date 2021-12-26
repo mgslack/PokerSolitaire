@@ -19,7 +19,9 @@ using PlayingCards;
  * 
  * ----------------------------------------------------------------------------
  * 
- * Revised: yyyy-mm-dd - xxxx.
+ * Revised: 2021-12-26 - Added win/lose scoring per Poker Solitaire rules.  Allow
+ *                       for users to set win scoring difficulty (100, 150 or
+ *                       200 points for win).
  * 
  */
 namespace PokerSolitaire
@@ -40,6 +42,7 @@ namespace PokerSolitaire
         private const string REG_KEY1 = "PosX";
         private const string REG_KEY2 = "PosY";
         private const string REG_KEY3 = "CardBack";
+        private const string REG_KEY4 = "WinScore";
         private const string REG_CS_AUTOWIN = "Highest Autoplay Score";
         #endregion
 
@@ -59,7 +62,8 @@ namespace PokerSolitaire
         private PictureBox[] handDisp = new PictureBox[MAX_CARDS];
         private PlayingCardImage images = new PlayingCardImage();
         private Statistics stats = new Statistics(REG_NAME);
-        private int currentCardNum = MAX_CARDS, hintLocation = -1, curScore = 0;
+        private int currentCardNum = MAX_CARDS, hintLocation = -1, curScore = 0,
+            winningScore = (int)WinScores.Normal;
         private bool autoPlayed = false;
         private PlayingCard currentCard = PlayingCard.EMPTY_CARD;
         private PokerEng pokerEng = new PokerEng();
@@ -84,6 +88,7 @@ namespace PokerSolitaire
                 winX = (int)Registry.GetValue(REG_NAME, REG_KEY1, winX);
                 winY = (int)Registry.GetValue(REG_NAME, REG_KEY2, winY);
                 cardB = (int)Registry.GetValue(REG_NAME, REG_KEY3, cardB);
+                winningScore = (int)Registry.GetValue(REG_NAME, REG_KEY4, winningScore);
             }
             catch (Exception ex) { /* ignore, go with defaults */ }
 
@@ -173,9 +178,21 @@ namespace PokerSolitaire
         {
             if (!autoPlayed)
             {
-                MsgBox.Show(this, "You have placed all cards, your score is: " + curScore, this.Text,
+                bool won = curScore >= winningScore;
+                string msg = "You have placed all cards, your score is: " + curScore + ". ";
+
+                if (won)
+                {
+                    msg += "You won!";
+                    stats.GameWon(curScore);
+                }
+                else
+                {
+                    msg += "You lost!";
+                    stats.GameLost(curScore);
+                }
+                MsgBox.Show(this, msg, this.Text,
                     MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxIcon.Information);
-                stats.GameWon(curScore);
                 lblHighScore.Text = "" + stats.HighestScore;
             }
             else
@@ -225,6 +242,7 @@ namespace PokerSolitaire
             InitializeHands();
             stats.GameName = this.Text;
             lblHighScore.Text = "" + stats.HighestScore;
+            lblWinningScore.Text = "" + winningScore;
         }
 
         private void MainWin_FormClosed(object sender, FormClosedEventArgs e)
@@ -317,14 +335,24 @@ namespace PokerSolitaire
             OptionsDlg dlg = new OptionsDlg()
             {
                 Images = images,
-                CardBack = cardBack
+                CardBack = cardBack,
+                WinScore = winningScore
             };
 
-            if (dlg.ShowDialog(this) == DialogResult.OK && dlg.CardBack != cardBack)
+            if (dlg.ShowDialog(this) == DialogResult.OK)
             {
-                cardBack = dlg.CardBack;
-                pbCardDeck.Image = images.GetCardBackImage(cardBack);
-                Registry.SetValue(REG_NAME, REG_KEY3, (int)cardBack, RegistryValueKind.DWord);
+                if (dlg.CardBack != cardBack)
+                {
+                    cardBack = dlg.CardBack;
+                    pbCardDeck.Image = images.GetCardBackImage(cardBack);
+                    Registry.SetValue(REG_NAME, REG_KEY3, (int)cardBack, RegistryValueKind.DWord);
+                }
+                if (dlg.WinScore != winningScore)
+                {
+                    winningScore = dlg.WinScore;
+                    lblWinningScore.Text = "" + winningScore;
+                    Registry.SetValue(REG_NAME, REG_KEY4, winningScore, RegistryValueKind.DWord);
+                }
             }
             dlg.Dispose();
         }

@@ -68,10 +68,12 @@ namespace PokerSolitaire
             this.pbCardToPlay = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
-            this.lblHighScore = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.lblScore = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.lblHighScore = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.lblWinningScore = new System.Windows.Forms.Label();
             this.pnlHands.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard25)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard24)).BeginInit();
@@ -368,7 +370,7 @@ namespace PokerSolitaire
             // 
             // pbCardDeck
             // 
-            this.pbCardDeck.Location = new System.Drawing.Point(14, 32);
+            this.pbCardDeck.Location = new System.Drawing.Point(14, 22);
             this.pbCardDeck.Name = "pbCardDeck";
             this.pbCardDeck.Size = new System.Drawing.Size(71, 96);
             this.pbCardDeck.TabIndex = 1;
@@ -377,7 +379,7 @@ namespace PokerSolitaire
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(20, 16);
+            this.label1.Location = new System.Drawing.Point(20, 6);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(58, 13);
             this.label1.TabIndex = 3;
@@ -386,7 +388,7 @@ namespace PokerSolitaire
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(18, 140);
+            this.label2.Location = new System.Drawing.Point(18, 128);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(64, 13);
             this.label2.TabIndex = 4;
@@ -461,7 +463,7 @@ namespace PokerSolitaire
             // 
             // pbCardToPlay
             // 
-            this.pbCardToPlay.Location = new System.Drawing.Point(14, 156);
+            this.pbCardToPlay.Location = new System.Drawing.Point(14, 144);
             this.pbCardToPlay.Name = "pbCardToPlay";
             this.pbCardToPlay.Size = new System.Drawing.Size(71, 96);
             this.pbCardToPlay.TabIndex = 6;
@@ -476,22 +478,55 @@ namespace PokerSolitaire
             this.panel1.Controls.Add(this.label2);
             this.panel1.Location = new System.Drawing.Point(413, 166);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(102, 268);
+            this.panel1.Size = new System.Drawing.Size(102, 250);
             this.panel1.TabIndex = 7;
             this.panel1.QueryContinueDrag += new System.Windows.Forms.QueryContinueDragEventHandler(this.XX_QueryContinueDrag);
             // 
             // panel2
             // 
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.lblWinningScore);
+            this.panel2.Controls.Add(this.label5);
             this.panel2.Controls.Add(this.lblScore);
             this.panel2.Controls.Add(this.label4);
             this.panel2.Controls.Add(this.lblHighScore);
             this.panel2.Controls.Add(this.label3);
-            this.panel2.Location = new System.Drawing.Point(413, 440);
+            this.panel2.Location = new System.Drawing.Point(413, 424);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(102, 85);
+            this.panel2.Size = new System.Drawing.Size(102, 101);
             this.panel2.TabIndex = 8;
             this.panel2.QueryContinueDrag += new System.Windows.Forms.QueryContinueDragEventHandler(this.XX_QueryContinueDrag);
+            // 
+            // lblScore
+            // 
+            this.lblScore.AutoSize = true;
+            this.lblScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScore.Location = new System.Drawing.Point(3, 51);
+            this.lblScore.Name = "lblScore";
+            this.lblScore.Size = new System.Drawing.Size(14, 13);
+            this.lblScore.TabIndex = 3;
+            this.lblScore.Text = "0";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 35);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(75, 13);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Current Score:";
+            this.label4.UseMnemonic = false;
+            // 
+            // lblHighScore
+            // 
+            this.lblHighScore.AutoSize = true;
+            this.lblHighScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHighScore.Location = new System.Drawing.Point(3, 19);
+            this.lblHighScore.Name = "lblHighScore";
+            this.lblHighScore.Size = new System.Drawing.Size(14, 13);
+            this.lblHighScore.TabIndex = 1;
+            this.lblHighScore.Text = "0";
+            this.lblHighScore.UseMnemonic = false;
             // 
             // label3
             // 
@@ -503,34 +538,26 @@ namespace PokerSolitaire
             this.label3.Text = "High Score:";
             this.label3.UseMnemonic = false;
             // 
-            // lblHighScore
+            // label5
             // 
-            this.lblHighScore.AutoSize = true;
-            this.lblHighScore.Location = new System.Drawing.Point(3, 20);
-            this.lblHighScore.Name = "lblHighScore";
-            this.lblHighScore.Size = new System.Drawing.Size(13, 13);
-            this.lblHighScore.TabIndex = 1;
-            this.lblHighScore.Text = "0";
-            this.lblHighScore.UseMnemonic = false;
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 66);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(80, 13);
+            this.label5.TabIndex = 4;
+            this.label5.Text = "Winning Score:";
+            this.label5.UseMnemonic = false;
             // 
-            // label4
+            // lblWinningScore
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 43);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(38, 13);
-            this.label4.TabIndex = 2;
-            this.label4.Text = "Score:";
-            this.label4.UseMnemonic = false;
-            // 
-            // lblScore
-            // 
-            this.lblScore.AutoSize = true;
-            this.lblScore.Location = new System.Drawing.Point(3, 60);
-            this.lblScore.Name = "lblScore";
-            this.lblScore.Size = new System.Drawing.Size(13, 13);
-            this.lblScore.TabIndex = 3;
-            this.lblScore.Text = "0";
+            this.lblWinningScore.AutoSize = true;
+            this.lblWinningScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWinningScore.Location = new System.Drawing.Point(3, 82);
+            this.lblWinningScore.Name = "lblWinningScore";
+            this.lblWinningScore.Size = new System.Drawing.Size(14, 13);
+            this.lblWinningScore.TabIndex = 5;
+            this.lblWinningScore.Text = "0";
+            this.lblWinningScore.UseMnemonic = false;
             // 
             // MainWin
             // 
@@ -636,6 +663,8 @@ namespace PokerSolitaire
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label lblHighScore;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lblWinningScore;
+        private System.Windows.Forms.Label label5;
     }
 }
 
