@@ -19,6 +19,14 @@ using PlayingCards;
  * or pair(s).  If filling up hands, will pick the spot that may get one of those
  * combinations if cards line up properly.
  * 
+ * Author: Michael G. Slack
+ * Date Written: 2021-12-13
+ * 
+ * ----------------------------------------------------------------------------
+ * 
+ * Revised: 2021-12-26 - Had wrong score value for royal flush, leftover from
+ *                       different score values for hands.
+ * 
  */
 namespace PokerSolitaire
 {
@@ -26,7 +34,7 @@ namespace PokerSolitaire
     {
         #region Constants
         private const int NUM_CARD_VALS = 13;
-        private const int ROYAL_FLUSH_PTS = 200;
+        private const int ROYAL_FLUSH_PTS = 100;
         private const int STRAIGHT_FLUSH_PTS = 75;
         private const int FOUR_KIND_PTS = 50;
         private const int FULL_HOUSE_PTS = 25;
