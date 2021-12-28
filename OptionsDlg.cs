@@ -13,6 +13,8 @@ using PlayingCards;
  * ----------------------------------------------------------------------------
  * 
  * Revised: 2021-12-26 - Added enum/options to set winning score.
+ *          2021-12-28 - Forgot to add code to setup win score components when
+ *                       loading (fixed).  Added option for hint method to use.
  * 
  */
 namespace PokerSolitaire
@@ -30,6 +32,9 @@ namespace PokerSolitaire
 
         private int _winScore = (int)WinScores.Normal;
         public int WinScore { get { return _winScore; } set { _winScore = value; } }
+
+        private HintMethod _hintMethod = HintMethod.ByHand;
+        public HintMethod HintMethod { get { return _hintMethod; } set { _hintMethod = value; } }
         #endregion
 
         // --------------------------------------------------------------------
@@ -47,6 +52,13 @@ namespace PokerSolitaire
 
             if (_images != null) pbCardBack.Image = _images.GetCardBackImage(_cardBack);
         }
+
+        private void LoadHintMethods()
+        {
+            foreach (string name in Enum.GetNames(typeof(HintMethod)))
+                cbHintMethod.Items.Add(name);
+            cbHintMethod.SelectedIndex = (int)_hintMethod;
+        }
         #endregion
 
         // --------------------------------------------------------------------
@@ -62,6 +74,14 @@ namespace PokerSolitaire
         private void OptionsDlg_Load(object sender, EventArgs e)
         {
             LoadAndDisplayCardBacks();
+            LoadHintMethods();
+            switch (_winScore)
+            {
+                case (int)WinScores.Easy: rbEasy.Checked = true; break;
+                case (int)WinScores.Normal: rbNormal.Checked = true; break;
+                case (int)WinScores.Hard: rbHard.Checked = true; break;
+                default: break;
+            }
         }
 
         private void cbImage_SelectedIndexChanged(object sender, EventArgs e)
@@ -83,6 +103,11 @@ namespace PokerSolitaire
         private void RbHard_CheckedChanged(object sender, EventArgs e)
         {
             _winScore = (int)WinScores.Hard;
+        }
+
+        private void CbHintMethod_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _hintMethod = (HintMethod)cbHintMethod.SelectedIndex;
         }
         #endregion
     }

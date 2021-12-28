@@ -22,6 +22,7 @@ using PlayingCards;
  * Revised: 2021-12-26 - Added win/lose scoring per Poker Solitaire rules.  Allow
  *                       for users to set win scoring difficulty (100, 150 or
  *                       200 points for win).
+ *          2021-12-28 - Added ability to configure and control hint method used.
  * 
  */
 namespace PokerSolitaire
@@ -43,6 +44,7 @@ namespace PokerSolitaire
         private const string REG_KEY2 = "PosY";
         private const string REG_KEY3 = "CardBack";
         private const string REG_KEY4 = "WinScore";
+        private const string REG_KEY5 = "HintMethod";
         private const string REG_CS_AUTOWIN = "Highest Autoplay Score";
         #endregion
 
@@ -66,6 +68,7 @@ namespace PokerSolitaire
             winningScore = (int)WinScores.Normal;
         private bool autoPlayed = false;
         private PlayingCard currentCard = PlayingCard.EMPTY_CARD;
+        private HintMethod hintMethod = HintMethod.ByHand;
         private PokerEng pokerEng = new PokerEng();
         #endregion
 
@@ -81,7 +84,7 @@ namespace PokerSolitaire
         #region Private methods
         private void LoadFromRegistry()
         {
-            int winX = -1, winY = -1, cardB = (int)CardBacks.Blue;
+            int winX = -1, winY = -1, cardB = (int)CardBacks.Blue, hintM = (int)HintMethod.ByHand;
 
             try
             {
@@ -89,11 +92,13 @@ namespace PokerSolitaire
                 winY = (int)Registry.GetValue(REG_NAME, REG_KEY2, winY);
                 cardB = (int)Registry.GetValue(REG_NAME, REG_KEY3, cardB);
                 winningScore = (int)Registry.GetValue(REG_NAME, REG_KEY4, winningScore);
+                hintM = (int)Registry.GetValue(REG_NAME, REG_KEY5, hintM);
             }
-            catch (Exception ex) { /* ignore, go with defaults */ }
+            catch (Exception) { /* ignore, go with defaults */ }
 
             if ((winX != -1) && (winY != -1)) this.SetDesktopLocation(winX, winY);
             if (Enum.IsDefined(typeof(CardBacks), cardB)) cardBack = (CardBacks)cardB;
+            if (Enum.IsDefined(typeof(HintMethod), hintM)) hintMethod = (HintMethod)hintM;
         }
 
         private void SetupContextMenu()
@@ -243,6 +248,7 @@ namespace PokerSolitaire
             stats.GameName = this.Text;
             lblHighScore.Text = "" + stats.HighestScore;
             lblWinningScore.Text = "" + winningScore;
+            pokerEng.HintMethod = hintMethod;
         }
 
         private void MainWin_FormClosed(object sender, FormClosedEventArgs e)
@@ -336,7 +342,8 @@ namespace PokerSolitaire
             {
                 Images = images,
                 CardBack = cardBack,
-                WinScore = winningScore
+                WinScore = winningScore,
+                HintMethod = hintMethod
             };
 
             if (dlg.ShowDialog(this) == DialogResult.OK)
@@ -352,6 +359,12 @@ namespace PokerSolitaire
                     winningScore = dlg.WinScore;
                     lblWinningScore.Text = "" + winningScore;
                     Registry.SetValue(REG_NAME, REG_KEY4, winningScore, RegistryValueKind.DWord);
+                }
+                if (dlg.HintMethod != hintMethod)
+                {
+                    hintMethod = dlg.HintMethod;
+                    pokerEng.HintMethod = hintMethod;
+                    Registry.SetValue(REG_NAME, REG_KEY5, (int)hintMethod, RegistryValueKind.DWord);
                 }
             }
             dlg.Dispose();

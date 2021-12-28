@@ -19,6 +19,23 @@ using PlayingCards;
  * or pair(s).  If filling up hands, will pick the spot that may get one of those
  * combinations if cards line up properly.
  * 
+ * Notes: 2021-12-27
+ * In an attempt to get better hinting, added a new hint method to the engine
+ * to see if I can get auto-played game scoring closer to 100+ points.  Have two
+ * methods built in now, one uses each hand can fill in on game board and scores
+ * with current card (original method).  Second scores each card position on game
+ * board and scores the sums each hand that card can belong to.
+ * Original method: 25 games, scores 26 - 125 points, avg score/game = 54.49 pts.
+ * Slot method: 25 games, scores 8 - 101 points, avg score/game = 58.24 pts.
+ * Neither method does a real good job, though the original had more games over
+ * 100 points (2) versus only one over 100 point game for slot scoring.  The slot
+ * method ends up with wider variance in scores, scewed toward on the small end,
+ * but higher average score.  Thinking of other methods to determine hint and will
+ * add them as developed, and will add option to main game to select between them.
+ * Seems like scoring each position should lead to larger scores, and it sort of
+ * does, but the upper bound is lower than original hand scoring.  The by slot
+ * method should be better, but the by hand method gives higher bound scores.
+ * 
  * Author: Michael G. Slack
  * Date Written: 2021-12-13
  * 
@@ -26,14 +43,24 @@ using PlayingCards;
  * 
  * Revised: 2021-12-26 - Had wrong score value for royal flush, leftover from
  *                       different score values for hands.
+ *          2021-12-27 - Added a different hint selection routine rather than
+ *                       original created.  New routine selects based on score
+ *                       of each card position on board rather than on each hand
+ *                       on board with new card added to it.  Left both methods
+ *                       in, setup a property to select the method to use.
+ *          2021-12-28 - Added ability in main form to configure and control the
+ *                       hint method used.
  * 
  */
 namespace PokerSolitaire
 {
+    public enum HintMethod { ByHand, BySlot };
+
     class PokerEng
     {
         #region Constants
         private const int NUM_CARD_VALS = 13;
+        private const int MAX_SLOT_HAND = 4;
         private const int ROYAL_FLUSH_PTS = 100;
         private const int STRAIGHT_FLUSH_PTS = 75;
         private const int FOUR_KIND_PTS = 50;
@@ -47,9 +74,30 @@ namespace PokerSolitaire
         private const int PARTIAL_STRAIGHT_PTS = 3;
         #endregion
 
+        #region Private statics
+        private static readonly int[,] slotToHandIdx = { { 0, 5, 10, -1 }, { 0, 6, -1, -1 },
+                                                         { 0, 7, -1, -1 }, { 0, 8, -1, -1 },
+                                                         { 0, 9, 11, -1 }, { 1, 5, -1, -1 },
+                                                         { 1, 6, 10, -1 }, { 1, 7, -1, -1 },
+                                                         { 1, 8, 11, -1 }, { 1, 9, -1, -1 },
+                                                         { 2, 5, -1, -1 }, { 2, 6, -1, -1 },
+                                                         { 2, 7, 10, 11 }, { 2, 8, -1, -1 },
+                                                         { 2, 9, -1, -1 }, { 3, 5, -1, -1 },
+                                                         { 3, 6, 10, -1 }, { 3, 7, -1, -1 },
+                                                         { 3, 8, 11, -1 }, { 3, 9, -1, -1 },
+                                                         { 4, 5, 11, -1 }, { 4, 6, -1, -1 },
+                                                         { 4, 7, -1, -1 }, { 4, 8, -1, -1 },
+                                                         { 4, 9, 10, -1 } };
+        #endregion
+
+        #region Properties
+        private HintMethod _hintMethod = HintMethod.ByHand;
+        public HintMethod HintMethod { get => _hintMethod; set => _hintMethod = value; }
+        #endregion
+
         // --------------------------------------------------------------------
 
-        #region Private methods
+        #region Private Scoring methods
         private bool HaveFlush(CardHand hand)
         {
             bool have = true;
@@ -226,9 +274,13 @@ namespace PokerSolitaire
 
             return score;
         }
+        #endregion
 
+        // --------------------------------------------------------------------
+
+        #region Private Hint/Auto-play methods
         /*
-         * Used to determine where to play next card (hint or auto-play).
+         * Used to determine where to play next card (hint or auto-play).  Hand method.
          */
         private int[] CalcAllScores(PlayingCard[] hands, int[,] handIdx, int maxHands, PlayingCard currentCard)
         {
@@ -256,7 +308,7 @@ namespace PokerSolitaire
         }
 
         /*
-         * Used to determine where to play next card (hint or auto-play).
+         * Used to determine where to play next card (hint or auto-play).  Hand method.
          */
         private int SelectHandWithHighestScore(int[] scores, int maxHands)
         {
@@ -269,18 +321,13 @@ namespace PokerSolitaire
                     hand = i; score = scores[i];
                 }
             }
+            // only hand, or more than one?
             if (hand >= 0)
             {
-                List<int> list = new List<int>
-                {
-                    hand
-                };
-
-                // only hand, or more than one?
+                List<int> list = new List<int> { hand };
+                
                 for (int i = 0; i < maxHands; i++)
-                {
                     if (score == scores[i] && hand != i) list.Add(i);
-                }
                 if (list.Count > 1)
                 {
                     // randomly select one (more than one)
@@ -293,9 +340,9 @@ namespace PokerSolitaire
         }
 
         /*
-         * Used to determine where to play next card (hint or auto-play).
+         * Used to determine where to play next card (hint or auto-play).  Hand and Slot method.
          */
-        private int PickRandomSlot(PlayingCard[] hands, int maxCards)
+        private int PickRandomHandSlot(PlayingCard[] hands, int maxCards)
         {
             int slot = -1;
 
@@ -306,6 +353,129 @@ namespace PokerSolitaire
             }
 
             return slot;
+        }
+
+        /*
+         * Used to determine where to play next card (hint or auto-play).
+         * Original hint method.  Adds card to each hand on game board (12 of them) and determines
+         * highest score of the hand with the card added to it.  Returns a slot of the highest
+         * scoring hand as the hint index.
+         */
+        private int GetHintByHand(PlayingCard[] hands, int maxCards, int[,] handIdx, int maxHands,
+            PlayingCard currentCard)
+        {
+            int hintIdx;
+            int[] scores = CalcAllScores(hands, handIdx, maxHands, currentCard);
+            int hand = SelectHandWithHighestScore(scores, maxHands);
+
+            if (hand < 0)
+            {
+                hintIdx = PickRandomHandSlot(hands, maxCards);
+            }
+            else
+            {
+                PlayingCard[] hnd = new PlayingCard[CardHand.DEF_MAX_NBR_CARDS];
+                for (int i = 0; i < CardHand.DEF_MAX_NBR_CARDS; i++)
+                {
+                    hnd[i] = hands[handIdx[hand, i]];
+                }
+                // pick random slot in highest point hand that is open
+                hintIdx = handIdx[hand, PickRandomHandSlot(hnd, CardHand.DEF_MAX_NBR_CARDS)];
+            }
+
+            return hintIdx;
+        }
+
+        /*
+         * Used to determine where to play next card (hint or auto-play).  Slot method.
+         */
+        private int[] CalcAllSlotScores(PlayingCard[] hands, int maxCards, int[,] handIdx,
+            PlayingCard currentCard)
+        {
+            int[] scores = new int[maxCards];
+            CardHand chkHand = new CardHand(); // 5 cards, sorted order (largest to smallest, K - A)
+
+            // determine score for each slot
+            for (int i = 0; i < maxCards; i++)
+            {
+                scores[i] = -1;
+                // sum scores of each hand contained in slot, if slot is empty
+                if (hands[i] == PlayingCard.EMPTY_CARD)
+                {
+                    for (int j = 0; j < MAX_SLOT_HAND; j++)
+                    {
+                        int hndIdx = slotToHandIdx[i, j];
+                        if (hndIdx >= 0)
+                        {
+                            for (int k = CardHand.FIRST; k < CardHand.DEF_MAX_NBR_CARDS; k++)
+                            {
+                                PlayingCard crd = hands[handIdx[hndIdx, k]];
+                                if (crd != PlayingCard.EMPTY_CARD) chkHand.Add(crd);
+                            }
+                            if (chkHand.CurNumCardsInHand < CardHand.DEF_MAX_NBR_CARDS)
+                            {
+                                if (scores[i] < 0) scores[i] = 0;
+                                chkHand.Add(currentCard);
+                                scores[i] += ScoreHand(chkHand, true) + ScorePartialHand(chkHand);
+                                chkHand.RemoveAll();
+                            }
+                        }
+                    }
+                }
+            }
+
+            return scores;
+        }
+
+        /*
+         * Used to determine where to play next card (hint or auto-play).  Slot method.
+         */
+        private int SelectSlotWithHighestScore(int[] scores, int maxCards)
+        {
+            int slot = -1, score = 0;
+
+            for (int i = 0; i < maxCards; i++)
+            {
+                if (scores[i] > score)
+                {
+                    score = scores[i]; slot = i;
+                }
+            }
+            // if have slot, only one?
+            if (slot >= 0)
+            {
+                List<int> list = new List<int> { slot };
+
+                for (int i = 0; i < maxCards; i++)
+                    if (i != slot && scores[i] == score) list.Add(i);
+                if (list.Count > 1)
+                {
+                    // randomly select one (more than one)
+                    int idx = SingleRandom.Instance.Next(list.Count);
+                    slot = list[idx];
+                }
+            }
+
+            return slot;
+        }
+
+        /*
+         * Other method used to determine hint/auto-play position.  This method scores each slot
+         * in the game board (25 slots) based on each hand the slot can be part of.  Sums the
+         * scores for each of those hands and selects the slot with the highest score.
+         */
+        private int GetHintBySlot(PlayingCard[] hands, int maxCards, int[,] handIdx, PlayingCard currentCard)
+        {
+            int hintIdx;
+            int[] scores = CalcAllSlotScores(hands, maxCards, handIdx, currentCard);
+            int slot = SelectSlotWithHighestScore(scores, maxCards);
+
+            if (slot < 0)
+                hintIdx = PickRandomHandSlot(hands, maxCards);
+            else
+                hintIdx = slot;
+
+            return hintIdx;
         }
         #endregion
 
@@ -354,24 +524,12 @@ namespace PokerSolitaire
             PlayingCard currentCard)
         {
             int hintIdx;
-            int[] scores = CalcAllScores(hands, handIdx, maxHands, currentCard);
-            int hand = SelectHandWithHighestScore(scores, maxHands);
 
-            if (hand < 0)
-            {
-                hintIdx = PickRandomSlot(hands, maxCards);
-            }
+            if (_hintMethod == HintMethod.BySlot)
+                hintIdx = GetHintBySlot(hands, maxCards, handIdx, currentCard);
             else
-            {
-                PlayingCard[] hnd = new PlayingCard[CardHand.DEF_MAX_NBR_CARDS];
-                for (int i = 0; i < CardHand.DEF_MAX_NBR_CARDS; i++)
-                {
-                    hnd[i] = hands[handIdx[hand, i]];
-                }
-                // pick random slot in highest point hand that is open
-                hintIdx = handIdx[hand, PickRandomSlot(hnd, CardHand.DEF_MAX_NBR_CARDS)];
-            }
-
+                hintIdx = GetHintByHand(hands, maxCards, handIdx, maxHands, currentCard);
+            
             return hintIdx;
         }
         #endregion
