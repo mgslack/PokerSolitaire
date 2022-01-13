@@ -14,7 +14,7 @@ using PlayingCards;
  *  Two Pair         5
  *  One Pair         2
  *  
- * The hinting is fairly basic.  Will select pos if can can get straight flush
+ * The hinting is fairly basic.  Will select pos if can get straight flush
  * with hand, can get 4 of a kind, can get full house, flush, straight, 3-of-kind
  * or pair(s).  If filling up hands, will pick the spot that may get one of those
  * combinations if cards line up properly.
@@ -29,7 +29,7 @@ using PlayingCards;
  * Slot method: 25 games, scores 8 - 101 points, avg score/game = 58.24 pts.
  * Neither method does a real good job, though the original had more games over
  * 100 points (2) versus only one over 100 point game for slot scoring.  The slot
- * method ends up with wider variance in scores, scewed toward on the small end,
+ * method ends up with wider variance in scores, scewed on toward the small end,
  * but higher average score.  Thinking of other methods to determine hint and will
  * add them as developed, and will add option to main game to select between them.
  * Seems like scoring each position should lead to larger scores, and it sort of
@@ -50,6 +50,8 @@ using PlayingCards;
  *                       in, setup a property to select the method to use.
  *          2021-12-28 - Added ability in main form to configure and control the
  *                       hint method used.
+ *          2022-01-13 - Added MAX_NUM_CARDS const to replace default max const
+ *                       from card hand.
  * 
  */
 namespace PokerSolitaire
@@ -59,6 +61,8 @@ namespace PokerSolitaire
     class PokerEng
     {
         #region Constants
+        public const int MAX_NUM_CARDS = 5; // max num cards in a hand
+
         private const int NUM_CARD_VALS = 13;
         private const int MAX_SLOT_HAND = 4;
         private const int ROYAL_FLUSH_PTS = 100;
@@ -102,10 +106,10 @@ namespace PokerSolitaire
         {
             bool have = true;
 
-            for (int i = CardHand.NEXT; i < CardHand.DEF_MAX_NBR_CARDS; i++)
+            for (int i = CardHand.NEXT; i < MAX_NUM_CARDS; i++)
                 if (hand.CardAt(i-1).Suit != hand.CardAt(i).Suit)
                 {
-                    have = false; i = CardHand.DEF_MAX_NBR_CARDS;
+                    have = false; i = MAX_NUM_CARDS;
                 }
 
             return have;
@@ -127,12 +131,12 @@ namespace PokerSolitaire
             bool sFlg = true;
             int cVal = hand.CardAt(CardHand.FIRST).GetCardPointValue();
 
-            for (int i = CardHand.NEXT; i < CardHand.DEF_MAX_NBR_CARDS; i++)
+            for (int i = CardHand.NEXT; i < MAX_NUM_CARDS; i++)
             {
                 cVal--;
                 if (cVal != hand.CardAt(i).GetCardPointValue())
                 {
-                    sFlg = false; i = CardHand.DEF_MAX_NBR_CARDS;
+                    sFlg = false; i = MAX_NUM_CARDS;
                 }
             }
 
@@ -152,7 +156,7 @@ namespace PokerSolitaire
 
             for (int i = 0; i < NUM_CARD_VALS; i++) chkCnts[i] = 0;
 
-            for (int i = CardHand.FIRST; i < CardHand.DEF_MAX_NBR_CARDS; i++)
+            for (int i = CardHand.FIRST; i < MAX_NUM_CARDS; i++)
             {
                 int crdValIdx = hand.CardAt(i).GetCardPointValue() - 1;
                 if (crdValIdx >= 0) chkCnts[crdValIdx]++;
@@ -220,7 +224,7 @@ namespace PokerSolitaire
             int bVal = hand.CardAt(CardHand.FIRST).GetCardPointValue();
             int eVal = hand.CardAt(hand.CurNumCardsInHand - 1).GetCardPointValue();
             int numCards = hand.CurNumCardsInHand;
-            bool have = (bVal - eVal) < CardHand.DEF_MAX_NBR_CARDS;
+            bool have = (bVal - eVal) < MAX_NUM_CARDS;
 
             if (!have)
             {
@@ -266,7 +270,7 @@ namespace PokerSolitaire
             int score = 0;
 
             // only score partial hands, fulls hands already scored
-            if (hand.CurNumCardsInHand > 1 && hand.CurNumCardsInHand < CardHand.DEF_MAX_NBR_CARDS)
+            if (hand.CurNumCardsInHand > 1 && hand.CurNumCardsInHand < MAX_NUM_CARDS)
             {
                 if (HavePartialFlush(hand)) score = PARTIAL_FLUSH_PTS * hand.CurNumCardsInHand;
                 if (HavePartialStraight(hand)) score += PARTIAL_STRAIGHT_PTS * hand.CurNumCardsInHand;
@@ -286,16 +290,16 @@ namespace PokerSolitaire
         {
             int[] scores = new int[maxHands];
             int multiplier = 1;
-            CardHand chkHand = new CardHand(); // 5 cards, sorted order (largest to smallest, K - A)
+            CardHand chkHand = new CardHand(MAX_NUM_CARDS); // 5 cards, sorted order (largest to smallest, K - A)
 
             for (int i = 0; i < maxHands; i++)
             {
-                for (int j = CardHand.FIRST; j < CardHand.DEF_MAX_NBR_CARDS; j++)
+                for (int j = CardHand.FIRST; j < MAX_NUM_CARDS; j++)
                 {
                     PlayingCard crd = hands[handIdx[i, j]];
                     if (crd != PlayingCard.EMPTY_CARD) chkHand.Add(crd);
                 }
-                if (chkHand.CurNumCardsInHand < CardHand.DEF_MAX_NBR_CARDS)
+                if (chkHand.CurNumCardsInHand < MAX_NUM_CARDS)
                     chkHand.Add(currentCard);
                 else
                     multiplier = -1;
@@ -374,13 +378,13 @@ namespace PokerSolitaire
             }
             else
             {
-                PlayingCard[] hnd = new PlayingCard[CardHand.DEF_MAX_NBR_CARDS];
-                for (int i = 0; i < CardHand.DEF_MAX_NBR_CARDS; i++)
+                PlayingCard[] hnd = new PlayingCard[MAX_NUM_CARDS];
+                for (int i = 0; i < MAX_NUM_CARDS; i++)
                 {
                     hnd[i] = hands[handIdx[hand, i]];
                 }
                 // pick random slot in highest point hand that is open
-                hintIdx = handIdx[hand, PickRandomHandSlot(hnd, CardHand.DEF_MAX_NBR_CARDS)];
+                hintIdx = handIdx[hand, PickRandomHandSlot(hnd, MAX_NUM_CARDS)];
             }
 
             return hintIdx;
@@ -393,7 +397,7 @@ namespace PokerSolitaire
             PlayingCard currentCard)
         {
             int[] scores = new int[maxCards];
-            CardHand chkHand = new CardHand(); // 5 cards, sorted order (largest to smallest, K - A)
+            CardHand chkHand = new CardHand(MAX_NUM_CARDS); // 5 cards, sorted order (largest to smallest, K - A)
 
             // determine score for each slot
             for (int i = 0; i < maxCards; i++)
@@ -407,12 +411,12 @@ namespace PokerSolitaire
                         int hndIdx = slotToHandIdx[i, j];
                         if (hndIdx >= 0)
                         {
-                            for (int k = CardHand.FIRST; k < CardHand.DEF_MAX_NBR_CARDS; k++)
+                            for (int k = CardHand.FIRST; k < MAX_NUM_CARDS; k++)
                             {
                                 PlayingCard crd = hands[handIdx[hndIdx, k]];
                                 if (crd != PlayingCard.EMPTY_CARD) chkHand.Add(crd);
                             }
-                            if (chkHand.CurNumCardsInHand < CardHand.DEF_MAX_NBR_CARDS)
+                            if (chkHand.CurNumCardsInHand < MAX_NUM_CARDS)
                             {
                                 if (scores[i] < 0) scores[i] = 0;
                                 chkHand.Add(currentCard);
@@ -495,7 +499,7 @@ namespace PokerSolitaire
         {
             int score = 0;
 
-            if (scorePartialHands || hand.CurNumCardsInHand == CardHand.DEF_MAX_NBR_CARDS)
+            if (scorePartialHands || hand.CurNumCardsInHand == MAX_NUM_CARDS)
             {
                 // check flush, rsf, sf
                 if (HaveFlush(hand))

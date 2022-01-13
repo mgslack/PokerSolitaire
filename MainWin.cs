@@ -23,6 +23,8 @@ using PlayingCards;
  *                       for users to set win scoring difficulty (100, 150 or
  *                       200 points for win).
  *          2021-12-28 - Added ability to configure and control hint method used.
+ *          2022-01-13 - Added constant for number cards in hand versus using max
+ *                       default value.  Cleaned up some code/comments.
  * 
  */
 namespace PokerSolitaire
@@ -162,12 +164,12 @@ namespace PokerSolitaire
 
         private void ScoreHands()
         {
-            CardHand chkHand = new CardHand(); // sorted hand (largest to smalles), 5 cards in hand
+            CardHand chkHand = new CardHand(PokerEng.MAX_NUM_CARDS); // sorted hand (largest to smallest), 5 cards in hand
 
             curScore = 0;
             for (int i = 0; i < MAX_HANDS; i++)
             {
-                for (int j = CardHand.FIRST; j < CardHand.DEF_MAX_NBR_CARDS; j++)
+                for (int j = CardHand.FIRST; j < PokerEng.MAX_NUM_CARDS; j++)
                 {
                     PlayingCard crd = hands[handIdx[i, j]];
                     if (crd != PlayingCard.EMPTY_CARD) chkHand.Add(crd);
