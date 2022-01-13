@@ -14,3 +14,10 @@ about 25% smaller than normal.  It plays Ok, but would be better if I could resi
 Could not find this scaling factor (other than for the primary screen/monitor).  Played around with it for a while, but
 still haven't found the answer.  Let me know if someone has a solution (have two monitors, the laptops and external - laptop
 running at 125% scaling, external is 100%).  Hopefully a solution that doesn't limit program to running on Windows 10 or higher.
+
+Updated to include a different hint method to try to bring up the scores of auto-play games and give better hints on where to
+play a card.  The original hint method picked the hand in the board where the new card gave the biggest score for that hand.
+The additional method changed to score each card slot based on the score of that slot of every hand the slot can participate
+in.  Neither of the two methods does real well (average game scores for auto-play are in the mid to upper 50's for both
+methods).  The 'By Hand' method does seem to provide higher upper bounds of scoring, but a lower average score.  Need to
+determine if there is a better method than the two currently available.
