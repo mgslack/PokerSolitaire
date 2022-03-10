@@ -15,6 +15,10 @@ using PlayingCards;
  * Revised: 2021-12-26 - Added enum/options to set winning score.
  *          2021-12-28 - Forgot to add code to setup win score components when
  *                       loading (fixed).  Added option for hint method to use.
+ *          2022-03-10 - Updated to check 'checked' status of radio buttons.
+ *                       Currently not an issue, unchecked event fires first,
+ *                       followed by checked, but shouldn't process if radio
+ *                       button not checked.
  * 
  */
 namespace PokerSolitaire
@@ -92,17 +96,17 @@ namespace PokerSolitaire
 
         private void RbEasy_CheckedChanged(object sender, EventArgs e)
         {
-            _winScore = (int)WinScores.Easy;
+            if (rbEasy.Checked) _winScore = (int)WinScores.Easy;
         }
 
         private void RbNormal_CheckedChanged(object sender, EventArgs e)
         {
-            _winScore = (int)WinScores.Normal;
+            if (rbNormal.Checked) _winScore = (int)WinScores.Normal;
         }
 
         private void RbHard_CheckedChanged(object sender, EventArgs e)
         {
-            _winScore = (int)WinScores.Hard;
+            if (rbHard.Checked) _winScore = (int)WinScores.Hard;
         }
 
         private void CbHintMethod_SelectedIndexChanged(object sender, EventArgs e)

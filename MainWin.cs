@@ -25,6 +25,7 @@ using PlayingCards;
  *          2021-12-28 - Added ability to configure and control hint method used.
  *          2022-01-13 - Added constant for number cards in hand versus using max
  *                       default value.  Cleaned up some code/comments.
+ *          2022-03-10 - Changed options dialog radio button checked events.
  * 
  */
 namespace PokerSolitaire
